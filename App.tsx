@@ -27,14 +27,21 @@ const App: React.FC = () => {
     setIsModalOpen(false);
     setHasInteracted(true);
     
+    // Trigger fireworks visual
     setIsFireworkTriggered(true);
-    setTimeout(() => setIsFireworkTriggered(false), 10000);
+    setTimeout(() => setIsFireworkTriggered(false), 12000);
 
+    // Call Gemini to generate a special 2026 blessing
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `你是一位精通跨年祝福的创意专家。请为名叫 ${name} 的人生成一段极具电影感、高级且富有哲理的2026跨年祝福。他的新年愿望是：${content}。仅输出一段富有诗意的祝福语。`,
+        contents: `你是一位精通跨年祝福的创意专家。请为名叫 ${name} 的人生成一段极具电影感、高级且富有哲理的2026跨年祝福。他的新年愿望是：${content}。
+要求：
+1. 风格高级、唯美。
+2. 字数在50字左右。
+3. 语言包含对2026年的期待。
+4. 仅输出祝福语。`,
       });
       setAiBlessing(response.text || '愿你在2026年，星河灿烂，万事顺遂。');
     } catch (error) {
@@ -52,43 +59,53 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-[#000000] overflow-hidden select-none">
-      {/* Background Layer: Fireworks (Bottom) */}
+    <div className="relative w-full h-screen bg-black overflow-hidden select-none">
+      {/* Visual Layer: Fireworks (Bottom) */}
       <FireworkCanvas 
         active={isFireworkTriggered} 
       />
       
-      {/* Interactive Layer: Snowfall (Top) */}
+      {/* Interaction Layer: Snowfall (Top) */}
       <SnowCanvas 
         onSnowflakeClick={handleSnowflakeClick} 
         onSavedClick={handleSavedSnowflakeClick}
         settledWishes={wishes}
       />
 
-      {/* Main UI Layer (Revealed later) */}
-      <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 text-center pointer-events-none z-10 transition-all duration-[4000ms] ease-in-out ${hasInteracted || wishes.length > 0 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-8'}`}>
-        <h1 className="cinzel text-white text-6xl md:text-8xl font-bold tracking-[0.3em] glow-text mb-4">
+      {/* Cinematic Branding (Reveals after first wish) */}
+      <div className={`absolute top-1/4 left-1/2 -translate-x-1/2 text-center pointer-events-none z-10 transition-all duration-[4000ms] ease-in-out ${hasInteracted || wishes.length > 0 ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-12'}`}>
+        <h1 className="cinzel text-white text-7xl md:text-9xl font-bold tracking-[0.3em] glow-text mb-4">
           2026
         </h1>
-        <p className="text-red-600 text-sm md:text-base tracking-[1.1em] font-light uppercase opacity-80">
-          A New Era
+        <p className="text-red-600 text-sm md:text-lg tracking-[1.5em] font-light uppercase opacity-80">
+          The Future Awaits
         </p>
       </div>
 
-      {/* AI Blessing Component */}
+      {/* AI Blessing Message */}
       {aiBlessing && (
         <div className="absolute inset-0 flex items-center justify-center z-40 px-6 backdrop-blur-sm bg-black/40">
-          <div className="bg-neutral-950 border border-red-900/40 p-10 rounded-2xl shadow-[0_0_100px_rgba(255,0,0,0.3)] text-center animate-in fade-in zoom-in duration-1000 max-w-2xl">
+          <div className="bg-neutral-950 border border-red-900/40 p-10 rounded-2xl shadow-[0_0_120px_rgba(255,0,0,0.4)] text-center animate-in fade-in zoom-in duration-1000 max-w-2xl">
+            <div className="mb-6">
+              <span className="text-red-500 text-[10px] uppercase tracking-[0.8em]">2026 Prophecy</span>
+            </div>
             <p className="text-white/95 italic font-light text-2xl leading-relaxed font-serif mb-10">
               "{aiBlessing}"
             </p>
             <button 
               onClick={() => setAiBlessing('')}
-              className="px-10 py-4 text-[11px] text-red-500 border border-red-900/50 uppercase tracking-[0.6em] hover:bg-red-950 hover:text-white transition-all rounded-full"
+              className="px-12 py-4 text-[11px] text-red-500 border border-red-900/50 uppercase tracking-[0.6em] hover:bg-red-950 hover:text-white transition-all rounded-full"
             >
               [ Accept Blessing ]
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Interaction Prompts */}
+      {!hasInteracted && wishes.length === 0 && (
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 animate-pulse text-white/20 text-[10px] tracking-[0.8em] uppercase text-center">
+          Tap a snowflake to begin
         </div>
       )}
 
